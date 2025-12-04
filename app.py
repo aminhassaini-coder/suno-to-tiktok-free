@@ -38,15 +38,28 @@ with col2:
     image_file = st.file_uploader("2. Ton Image de fond (JPG/PNG)", type=["jpg", "png", "jpeg"])
 
 # Options
-# Sur le Cloud, on limite pour éviter le crash
-# On détecte si on est sur Linux (Cloud) ou Windows (Toi)
-if os.name == 'posix':
-    st.info("ℹ️ Version Cloud Gratuite : Modèle 'tiny' activé par défaut (plus rapide).")
-    model_size = "tiny" # On force la valeur
-else:
-    # Sur ton PC puissant, tu as le choix
-    model_size = st.selectbox("Qualité des sous-titres", ["tiny", "small", "medium"], index=1)
+model_size = st.selectbox("Qualité des sous-titres (Whisper)", ["tiny", "small", "medium"], index=1)
 add_lyrics = st.checkbox("Générer les sous-titres", value=True)
+
+def create_text_clip_pil(text, duration, fontsize=60, font="arial.ttf"):
+    # Version simplifiée PIL pour contourner ImageMagick
+    W, H = 1080, 200 
+    img = PIL.Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    draw = PIL.ImageDraw.Draw(img)
+    
+    # Essai de chargement de police, sinon défaut
+    try:
+        font_obj = PIL.ImageFont.truetype("DejaVuSans-Bold.ttf", fontsize)
+    except:
+        font_obj = PIL.ImageFont.load_default()
+
+    # Centrage approximatif
+    # (On fait simple pour que ça marche partout)
+    draw.text((100, 50), text, font=font_obj, fill='white', stroke_width=2, stroke_fill='black')
+    
+    return (ImageClip(np.array(img))
+            .set_duration(duration)
+            .set_position(('center', 1400)))
 
 # --- LE MOTEUR (Fonctions cachées) ---
 def process_video(audio_path, image_path):
@@ -102,13 +115,22 @@ def process_video(audio_path, image_path):
             end_t = segment["end"]
             duration = end_t - start_t
             
-            txt_clip = (TextClip(txt, fontsize=70, color='white', font='Arial-Bold', 
-                                stroke_color='black', stroke_width=3, method='caption', 
-                                size=(SCREEN_SIZE[0]*0.8, None))
-                        .set_position(('center', 1400))
-                        .set_start(start_t)
-                        .set_duration(duration))
+            # --- CHOIX DE LA MÉTHODE TEXTE ---
+            if os.name == 'posix':
+                # Sur le Cloud (Linux), on utilise la version PIL (Sûre)
+                txt_clip = create_text_clip_pil(txt, duration)
+                txt_clip = txt_clip.set_start(start_t)
+            else:
+                # Sur ton PC (Windows), on garde la version Pro ImageMagick
+                txt_clip = (TextClip(txt, fontsize=70, color='white', font='Arial-Bold', 
+                                    stroke_color='black', stroke_width=3, method='caption', 
+                                    size=(1080*0.8, None))
+                            .set_position(('center', 1400))
+                            .set_start(start_t)
+                            .set_duration(duration))
+            
             clips.append(txt_clip)
+
     
     progress_bar.progress(75)
 
@@ -151,5 +173,4 @@ if st.button("🚀 GÉNÉRER LA VIDÉO", type="primary"):
             st.error(f"Une erreur est survenue : {e}")
     else:
         st.warning("⚠️ Merci d'uploader un fichier Audio ET une Image.")
-
 
