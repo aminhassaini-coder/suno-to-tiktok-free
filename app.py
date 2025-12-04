@@ -6,6 +6,7 @@ import numpy as np
 import PIL.Image 
 import PIL.ImageDraw
 import PIL.ImageFont
+import gc
 
 
 # --- PATCH PILLOW (Juste après l'import) ---
@@ -82,7 +83,7 @@ def process_video(audio_path, image_path):
     progress_bar = st.progress(0)
     status_text = st.empty()
 
-    SCREEN_SIZE = (1080, 1920)
+    SCREEN_SIZE = (720, 1280)
     
     # 1. Analyse
     status_text.text("🎧 Analyse du rythme en cours...")
@@ -150,6 +151,12 @@ def process_video(audio_path, image_path):
     progress_bar.progress(75)
 
     # 4. Rendu
+    # AVANT de lancer final_video.write_videofile :
+    del model  # On supprime le modèle IA de la mémoire
+    del y      # On supprime les données audio brutes
+    del result # On supprime le résultat de la transcription
+    gc.collect() # On force le camion poubelle de la RAM à passer
+
     status_text.text("🚀 Encodage final (ça chauffe !)...")
     final_video = CompositeVideoClip(clips, size=SCREEN_SIZE).set_audio(audio_clip)
     
