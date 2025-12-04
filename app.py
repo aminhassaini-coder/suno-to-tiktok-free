@@ -4,6 +4,9 @@ import librosa
 import numpy as np
 # IMPORTANT : Importe PIL comme ça
 import PIL.Image 
+import PIL.ImageDraw
+import PIL.ImageFont
+
 
 # --- PATCH PILLOW (Juste après l'import) ---
 if not hasattr(PIL.Image, 'ANTIALIAS'):
