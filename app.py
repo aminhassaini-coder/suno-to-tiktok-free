@@ -54,7 +54,7 @@ add_lyrics = st.checkbox("Générer les sous-titres", value=True)
 
 def create_text_clip_pil(text, duration, fontsize=60, font="arial.ttf"):
     # Version simplifiée PIL pour contourner ImageMagick
-    W, H = 1080, 200 
+    W, H = 1080, 600 
     img = PIL.Image.new('RGBA', (W, H), (0, 0, 0, 0))
     draw = PIL.ImageDraw.Draw(img)
     
@@ -70,7 +70,7 @@ def create_text_clip_pil(text, duration, fontsize=60, font="arial.ttf"):
     wrapped_text = textwrap.fill(text, width=30) 
     
     # On dessine
-    draw.text((50, 50), wrapped_text, font=font_obj, fill='white', stroke_width=2, stroke_fill='black')
+    draw.text((50, 10), wrapped_text, font=font_obj, fill='white', stroke_width=2, stroke_fill='black')
     
     return (ImageClip(np.array(img))
             .set_duration(duration)
