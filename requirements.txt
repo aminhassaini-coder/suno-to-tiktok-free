@@ -1,0 +1,7 @@
+streamlit
+moviepy==1.0.3
+openai-whisper
+librosa
+numpy
+Pillow
+imageio-ffmpeg
