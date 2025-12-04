@@ -38,7 +38,15 @@ with col2:
     image_file = st.file_uploader("2. Ton Image de fond (JPG/PNG)", type=["jpg", "png", "jpeg"])
 
 # Options
-model_size = st.selectbox("Qualité des sous-titres (Whisper)", ["tiny", "small", "medium"], index=1)
+# Sur le Cloud, on limite pour éviter le crash
+# On détecte si on est sur Linux (Cloud) ou Windows (Toi)
+if os.name == 'posix':
+    st.info("ℹ️ Version Cloud Gratuite : Modèle 'tiny' activé par défaut (plus rapide).")
+    model_size = "tiny" # On force la valeur
+else:
+    # Sur ton PC puissant, tu as le choix
+    model_size = st.selectbox("Qualité des sous-titres", ["tiny", "small", "medium"], index=1)
+
 add_lyrics = st.checkbox("Générer les sous-titres", value=True)
 
 def create_text_clip_pil(text, duration, fontsize=60, font="arial.ttf"):
