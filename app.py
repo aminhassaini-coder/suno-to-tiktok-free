@@ -1,26 +1,28 @@
 import streamlit as st
 import os
-# On supprime les chemins Windows en dur
-# On laisse ImageMagick se débrouiller avec la configuration Linux par défaut de Streamlit
-from moviepy.config import change_settings
-change_settings({"IMAGEMAGICK_BINARY": "/usr/bin/convert"}) # Chemin standard Linux
+import librosa
+import numpy as np
+# IMPORTANT : Importe PIL comme ça
+import PIL.Image 
 
-# --- CONFIGURATION DU SYSTÈME ---
-# 1. Patch Pillow
+# --- PATCH PILLOW (Juste après l'import) ---
 if not hasattr(PIL.Image, 'ANTIALIAS'):
     PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
+# -------------------------------------------
 
-# 2. Configuration ImageMagick (À adapter si besoin, comme avant)
-# On essaie de deviner où il est
-IMAGEMAGICK_BINARY = r"C:\Program Files\ImageMagick-7.1.1-Q16-HDRI\magick.exe"
-if not os.path.exists(IMAGEMAGICK_BINARY):
-    # Recherche auto basique
-    base = r"C:\Program Files"
-    for f in os.listdir(base):
-        if "ImageMagick" in f:
-            IMAGEMAGICK_BINARY = os.path.join(base, f, "magick.exe")
-            break
-change_settings({"IMAGEMAGICK_BINARY": IMAGEMAGICK_BINARY})
+from moviepy.editor import *
+from moviepy.config import change_settings
+import whisper
+
+
+# Configuration pour Linux (Streamlit Cloud)
+if os.name == 'posix':  # Si on est sur Linux/Mac
+    change_settings({"IMAGEMAGICK_BINARY": "/usr/bin/convert"})
+else:
+    # Ta config Windows actuelle (pour quand tu testes chez toi)
+    # ... garde ton code windows ici si tu veux ...
+    pass 
+
 
 # --- INTERFACE GRAPHIQUE (STREAMLIT) ---
 st.set_page_config(page_title="Suno to TikTok 🚀", layout="centered")
